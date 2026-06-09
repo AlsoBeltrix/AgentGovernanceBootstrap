@@ -40,8 +40,18 @@ Not implemented yet:
 
 - Prefer implementation and pilot-driven fixes over more planning.
 - Do not create a new plan revision unless the user asks for one.
-- Do not encode transient chat corrections as durable project rules.
-- Generalize durable guidance so it makes sense without chat context.
+- Treat the repo as durable memory. If a repo-specific fact, decision, invariant,
+  verification rule, non-goal, or open question matters for future work, record it in
+  the appropriate repo file or explicitly state that it remains unrecorded.
+- Do not encode transient chat corrections in any bootstrap output, including approval
+  summaries, draft files, and durable guidance.
+- Generalize guidance so it makes sense without chat context.
+- Keep one canonical location for each durable project truth when practical; use pointers
+  instead of duplicating competing versions of the same rule.
+- For generated target-repo guidance, treat "run the observed automated verification after
+  code changes" as a default rule, not a human approval question. Docs-only changes do not
+  require code verification unless they affect setup, commands, runtime behavior,
+  generated files, or user-visible behavior.
 - Keep target-repo artifacts in Markdown and JSON unless a repo-native wrapper is
   explicitly justified.
 - Do not impose this repo's helper implementation language as a target-repo dependency.

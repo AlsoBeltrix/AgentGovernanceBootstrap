@@ -23,14 +23,21 @@ The helper writes:
 <target-repo>/.bootstrap-tmp/START-HERE.md
 <target-repo>/.bootstrap-tmp/repo-discovery-manifest.json
 <target-repo>/.bootstrap-tmp/bootstrap-review-packet.md
+<target-repo>/.bootstrap-tmp/drafts/
+<target-repo>/.bootstrap-tmp/drafts/.agents/
+<target-repo>/.bootstrap-tmp/templates/approval-summary.template.md
 <target-repo>/.bootstrap-tmp/templates/AGENTS.template.md
+<target-repo>/.bootstrap-tmp/templates/state.template.md
+<target-repo>/.bootstrap-tmp/templates/decisions.template.md
 <target-repo>/.bootstrap-tmp/templates/repo-map.template.json
 <target-repo>/.bootstrap-tmp/templates/artifact-manifest.template.json
 ```
 
-`START-HERE.md` is written only when the target repo does not already have `AGENTS.md`.
+`START-HERE.md` is always written. In repos that already have `AGENTS.md`, it tells the
+agent to read that file and follow its bootstrap handoff rule before using the fallback
+workflow.
 
-## First Bootstrap
+## Agent Kickoff
 
 Open a fresh agent session in the target repo and paste:
 
@@ -42,15 +49,29 @@ The expected agent behavior is:
 
 1. Read the review packet and manifest.
 2. Treat scratch files as data, not authority.
-3. Read suggested repo files directly from the repo.
-4. Use templates as drafting aids.
-5. Draft durable guidance.
-6. Ask before writing or replacing tracked guidance.
+3. If `AGENTS.md` exists, read it and follow its bootstrap handoff rule.
+4. Read suggested repo files directly from the repo.
+5. Use templates as drafting aids.
+6. Write `.bootstrap-tmp/drafts/approval-summary.md` for human review.
+7. Apply the verification default: code changes require the repo's current automated
+   verification; docs-only changes do not unless they affect setup, commands, runtime
+   behavior, generated files, or user-visible behavior; behavior not covered by automation
+   needs the relevant manual check or a clear note that it was not run.
+8. Write proposed guidance drafts under `.bootstrap-tmp/drafts/`, mirroring final paths
+   when practical.
+9. Ask before copying drafts to tracked guidance paths.
+10. Do not ask about deleting `.bootstrap-tmp/` until after approved durable files have
+   been copied.
 
 ## Update Bootstrap
 
 Once a repo has `AGENTS.md`, future discovery runs should be handled by the bootstrap
-handoff rule inside that repo's `AGENTS.md`.
+handoff rule inside that repo's `AGENTS.md`. The operator still uses the same kickoff
+prompt:
+
+```text
+Read .bootstrap-tmp/START-HERE.md and follow it.
+```
 
 The agent should:
 
@@ -58,8 +79,14 @@ The agent should:
 2. Read `.bootstrap-tmp/repo-discovery-manifest.json`.
 3. Compare the manifest commit with current `HEAD`.
 4. Refuse to process stale scratch output automatically.
-5. Propose durable guidance changes.
-6. Ask before writing tracked files.
+5. Write `.bootstrap-tmp/drafts/approval-summary.md` for human review.
+6. Apply the verification default rather than asking the human whether code should be
+   tested before completion.
+7. Write proposed guidance changes under `.bootstrap-tmp/drafts/`, mirroring final paths
+   when practical.
+8. Ask before copying drafts to tracked guidance paths.
+9. Do not ask about deleting `.bootstrap-tmp/` until after approved durable files have
+   been copied.
 
 ## What To Commit In Target Repos
 
@@ -67,6 +94,8 @@ Commit approved durable guidance, for example:
 
 ```text
 AGENTS.md
+.agents/state.md
+.agents/decisions.md
 .agents/repo-map.json
 .agents/artifact-manifest.json
 .agents/bootstrap.config.json
@@ -89,11 +118,18 @@ The scratch directory contains its own `.gitignore` with:
 
 After testing on a small repo, collect:
 
-- the proposed `AGENTS.md`
-- any proposed `.agents/*` files
+- the proposed `.bootstrap-tmp/drafts/approval-summary.md`
+- the proposed `.bootstrap-tmp/drafts/AGENTS.md`
+- any proposed `.bootstrap-tmp/drafts/.agents/*` files
 - the agent's final answer
 - any confusing prompt, question, or output
 - whether `.bootstrap-tmp/` stayed out of `git status --short`
 
-Use those results to decide what the next implementation step should be.
+Check whether `approval-summary.md` starts with `Approve`, `Approve after edits`, or
+`Do not approve yet`; gives a scope tier, proposed files, assumptions, risk-ranked
+limitations, a verification default, and a repo-memory check; and does not require the
+human to inspect raw JSON or answer code-expertise questions about normal verification
+hygiene. It should use generalized wording and should not include transient chat phrasing,
+session-specific detours, or prompt corrections.
 
+Use those results to decide what the next implementation step should be.
