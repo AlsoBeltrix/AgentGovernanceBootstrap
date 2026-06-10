@@ -129,7 +129,10 @@ file.
    `.agents/harvest.md` in this repo instead; it travels with the repo via
    git.
 4. Apart from the harvest dropbox, never write outside this repo. The
-   canonical bootstrap repo is never modified from this session.
+   canonical bootstrap repo is never modified from a session targeting
+   another repo; when the bootstrap repo is itself the target (a
+   self-migration), the approved scoped commit applies to it like any other
+   target, and Step 0's sync remains the only other sanctioned write.
 5. Commit the migration as ONE scoped commit: `git add` exactly the files
    the approval summary lists as Committed (tracked) - never `git add -A`,
    so unrelated working-tree changes stay untouched, and never `git add -f`;

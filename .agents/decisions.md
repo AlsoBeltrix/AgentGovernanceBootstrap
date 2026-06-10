@@ -23,7 +23,7 @@ The prior two-stage PowerShell architecture (historical record only in `docs/his
 Status: Active
 
 Decision:
-During a migration the agent may (rarely) record generalizable governance rules in a harvest report, under strict limits: expected outcome is no report; an idea qualifies only if earned by a real citable incident, not already covered by templates, useful to other repos, and at most three ideas total; never a "nothing found" file. Delivery: write append-only as a new dated file in the owner's harvest dropbox repo (path from untracked harvest.config.json) if configured and reachable, then commit/push only that dropbox under standing authorization; otherwise fall back to `.agents/harvest.md` in the target. The canonical bootstrap repo itself is never written to by target sessions.
+During a migration the agent may (rarely) record generalizable governance rules in a harvest report, under strict limits: expected outcome is no report; an idea qualifies only if earned by a real citable incident, not already covered by templates, useful to other repos, and at most three ideas total; never a "nothing found" file. Delivery: write append-only as a new dated file in the owner's harvest dropbox repo (path from untracked harvest.config.json) if configured and reachable, then commit/push only that dropbox under standing authorization; otherwise fall back to `.agents/harvest.md` in the target. Harvest reports are never delivered into the canonical bootstrap repo itself.
 
 Reason:
 Prevents over-eager padding and keeps the shared canon clean. A separate sweep session (owner-initiated only) in this repo judges new reports skeptically and logs outcomes in `harvest/processed.md`.
