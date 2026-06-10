@@ -199,6 +199,14 @@ decides; approved edits land in `templates/` or `procedures/`; handled reports
 are logged here and moved to a `processed/` subfolder inside the dropbox (the
 dropbox exception permits that write).
 
+The report format is machine-checkable by design (fixed required headings),
+and the collection half of the sweep — scan, validate, drop noncompliant
+reports with their names listed, concatenate survivors into a digest — is
+deliberately script-ready. The digest script is not built now (YAGNI at
+current volume); it becomes a small stdlib Python drop-in the first time a
+sweep has enough reports to justify it. Judgment and template editing remain
+agent + owner work; scripting those is rejected Approach B.
+
 ## Testing
 
 - Two small fixture repos under `test/fixtures/`: one greenfield, one carrying

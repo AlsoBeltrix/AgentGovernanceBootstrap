@@ -206,6 +206,8 @@ Discipline (read before writing anything):
   repos.
 - Hard cap: three ideas. More than three means you are padding.
 - Never write a "no ideas found" report. No file means none.
+- Use the EXACT headings below. The format is machine-checkable; a
+  noncompliant report is dropped at sweep time (and named as dropped).
 
 ## Ideas
 
@@ -529,7 +531,9 @@ good one costs nothing, because the report stays where it is.
    dropbox on this machine). Also scan any repo paths the owner names for
    fallback `.agents/harvest.md` files. All cross-repo reading is read-only;
    the dropbox is the one place this session may write outside this repo.
-2. Skip reports already logged in `harvest/processed.md`.
+2. Skip reports already logged in `harvest/processed.md`. Reject reports that
+   do not follow the template's required headings - list each rejected file
+   by name; never drop anything silently.
 3. For each idea, give a verdict - adopt / adapt / skip, default skip - with
    one plain-English sentence of reasoning.
 4. Present all verdicts to the owner in plain English. The owner decides per
