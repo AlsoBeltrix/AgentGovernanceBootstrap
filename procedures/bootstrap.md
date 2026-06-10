@@ -10,6 +10,36 @@ require them. The same contract governs conversation: answer the human's questio
 with words and stop — never respond to a question or musing with edits or
 execution; act only on an explicit decision.
 
+## Step 0: Sync this toolkit
+
+The canonical copies of this process live at:
+
+- `http://q:3000/michael/AgentGovernanceBootstrap.git` (LAN gitea; fastest
+  when reachable)
+- `https://github.com/roethlar/AgentGovernanceBootstrap.git` (reachable from
+  anywhere)
+
+Before anything else, sync the local bootstrap repo (the directory containing
+this `procedures/` folder; normally `~/dev/AgentGovernanceBootstrap`):
+
+1. `git fetch` from each URL that responds.
+2. `git merge --ff-only` the newest fetched head.
+3. If no remote responds, fast-forward is impossible (local diverged), or the
+   two remotes disagree with each other: proceed with the local copy as-is and
+   flag that, in plain English, in the approval summary. Never merge or rebase
+   this repo; never block the owner on freshness.
+4. If the sync updated this file, re-read it before continuing.
+
+This sync is the ONE sanctioned write to the bootstrap repo from a session in
+another repo: the content comes from the owner's remotes, not from you.
+Everything else in the bootstrap repo stays read-only.
+
+If you are reading this from a target repo's `.bootstrap-tmp/procedures/` copy
+and no local bootstrap repo exists on this machine, clone it from either URL
+to `~/dev/AgentGovernanceBootstrap` first; if you cannot clone (offline or
+sandboxed), continue with the scratch pack and flag the toolkit version as
+unverified.
+
 ## Step 1: Ensure fresh discovery
 
 Discovery is a deterministic script. It writes `.bootstrap-tmp/` in the target repo:

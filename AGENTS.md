@@ -55,6 +55,11 @@ Open:
   code, or start multi-step changes until the owner explicitly decides.
   Tool-local agent memory (Claude auto-memory, Serena memories, etc.) is
   scratch; this file is the authority for this rule.
+- This toolkit's canon propagates only when pushed. Canonical remotes: gitea
+  `http://q:3000/michael/AgentGovernanceBootstrap.git` (primary) and GitHub
+  `https://github.com/roethlar/AgentGovernanceBootstrap.git` (public). After
+  committing here, offer once to push, naming both; target-repo sessions sync
+  from these remotes at kickoff (fast-forward only).
 - Prefer implementation and pilot-driven fixes over more planning.
 - Do not create a new plan revision unless the user asks for one.
 - Treat the repo as durable memory. If a repo-specific fact, decision, invariant,

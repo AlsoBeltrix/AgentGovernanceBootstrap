@@ -11,7 +11,11 @@ On each machine you bootstrap from:
 1. Install Git and Python 3. Windows:
    `winget install Git.Git Python.Python.3.12`. macOS and Linux usually have
    both already.
-2. Clone this process repo.
+2. Clone this process repo from a canonical remote - gitea on the LAN
+   (`http://q:3000/michael/AgentGovernanceBootstrap.git`) or GitHub anywhere
+   (`https://github.com/roethlar/AgentGovernanceBootstrap.git`) - to
+   `~/dev/AgentGovernanceBootstrap`. (Even this is optional: the kickoff
+   procedure self-provisions by cloning when no local copy exists.)
 3. Optional: clone the harvest dropbox repo, then create an untracked
    `harvest.config.json` in this repo's root:
    `{"harvestRepoPath": "/path/to/harvest-repo"}`. The config file is what
@@ -19,8 +23,11 @@ On each machine you bootstrap from:
 4. Optional: allowlist the dropbox path in your harness permissions so
    delivery does not prompt.
 
-Before each bootstrap run: `git pull` this repo first. A stale clone
-bootstraps repos with stale templates, and nothing detects that for you.
+Freshness is automatic: every bootstrap run starts by syncing this repo from
+the canonical remotes (fast-forward only; offline or diverged clones proceed
+as-is with a plain-English flag in the approval summary). Your half of the
+bargain: push this repo to BOTH remotes when you change it - toolkit changes
+that are not pushed do not propagate to your other machines.
 
 ## Normal flow (local agent)
 

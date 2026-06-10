@@ -86,6 +86,21 @@ every part of the process that contains judgment.
     and does not always push to both), and pushes only what the owner names.
     Pilot evidence: requiring a separate "now commit" step left migrations
     sitting uncommitted, unsynced across the owner's machines.
+11. **The toolkit syncs itself from canonical remotes (owner decision,
+    2026-06-10).** Step 0 of the kickoff procedure fetches the owner's two
+    canonical remotes — gitea `http://q:3000/michael/AgentGovernanceBootstrap.git`
+    (LAN, primary) and GitHub
+    `https://github.com/roethlar/AgentGovernanceBootstrap.git` (public,
+    reachable anywhere) — and fast-forwards the local bootstrap repo before
+    discovery runs. This is the single sanctioned write to the bootstrap repo
+    from a target-repo session: the content originates from the owner's
+    remotes, so the session contributes nothing. On no-network, divergence, or
+    remote disagreement: proceed on the local copy and flag it in the approval
+    summary — never merge, never block. This replaces the per-machine clone
+    step and the "pull before you bootstrap" habit; the kickoff
+    self-provisions on machines without a clone. Corollary: toolkit changes
+    propagate only when pushed, so sessions in this repo offer to push to both
+    remotes after committing.
 
 ## New repo layout (this repo)
 

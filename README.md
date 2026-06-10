@@ -86,6 +86,11 @@ The agent runs discovery itself, follows the computed route (greenfield,
 migration, or update), drafts under `.bootstrap-tmp/drafts/`, and presents a
 plain-English approval summary before any tracked file changes.
 
+The procedure keeps itself current: every run starts by syncing the toolkit
+from its canonical remotes (gitea on the LAN, GitHub from anywhere), and on a
+machine with no local copy it clones one. Stale or offline clones proceed
+as-is with a plain-English flag.
+
 Fallback for sandboxed agents that cannot reach this repo: run discovery
 yourself first -
 
