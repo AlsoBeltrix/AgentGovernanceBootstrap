@@ -1,0 +1,33 @@
+{
+  "validated_against": {
+    "commit": "fcb58228fc7ea19f3c3ff21910c14a96e6532de0",
+    "date": "2026-06-10"
+  },
+  "artifacts": [
+    {
+      "path": "AGENTS.md",
+      "purpose": "Canonical agent guidance (mission, Bootstrap Handoff, Active Sources for this toolkit, working rules, verification, final response)",
+      "custody": "tracked"
+    },
+    {
+      "path": ".agents/state.md",
+      "purpose": "Current repo state, active work, blockers, next actions, verification commands, and unrecorded repo memory",
+      "custody": "tracked"
+    },
+    {
+      "path": ".agents/decisions.md",
+      "purpose": "Durable decisions and supersessions (pilot outcomes, layout migration, evidence rule, git safety, one-scoped-commit, etc.)",
+      "custody": "tracked"
+    },
+    {
+      "path": ".agents/repo-map.json",
+      "purpose": "Verification commands and policy, fact-bearing paths, guidance paths, project notes",
+      "custody": "tracked"
+    },
+    {
+      "path": ".agents/artifact-manifest.json",
+      "purpose": "Inventory of the durable guidance artifacts with custody evidence from git at time of bootstrap",
+      "custody": "tracked"
+    }
+  ]
+}

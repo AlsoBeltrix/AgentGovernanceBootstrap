@@ -1,0 +1,65 @@
+{
+  "validated_against": {
+    "commit": "fcb58228fc7ea19f3c3ff21910c14a96e6532de0",
+    "date": "2026-06-10"
+  },
+  "projects": [
+    {
+      "name": "AgentGovernanceBootstrap",
+      "root": ".",
+      "description": "Portable governance/bootstrap process and toolkit for LLM-agent-maintained repositories. Supplies discovery script, procedures, templates, and the self-describing AGENTS.md for this repo."
+    }
+  ],
+  "verification": {
+    "status": "local",
+    "commands": [
+      "python3 -m unittest discover -s tests -v"
+    ],
+    "policy": {
+      "code_changes": "Run current automated verification before claiming completion.",
+      "docs_only": "Code verification is not required unless docs affect setup, commands, runtime behavior, generated files, or user-visible behavior.",
+      "manual_behavior": "Run the relevant manual check, smoke test, or playtest for behavior not covered by automation, or state clearly that it was not run."
+    },
+    "notes": "No CI workflow files were detected by discovery in provider-executable paths with matching branch triggers. The unittest command is the explicit local verification entry point declared in AGENTS.md and docs/usage.md for changes to the script, tests, and copied content. Documentation-only changes use `git diff --check`. See AGENTS.md Verification section for the exact rule."
+  },
+  "fact_bearing_paths": [
+    "README.md",
+    "docs/usage.md",
+    "docs/design.md",
+    "docs/superpowers/specs/2026-06-09-existing-governance-migration-design.md",
+    "tools/discover.py",
+    "procedures/bootstrap.md",
+    "procedures/migration.md",
+    "procedures/verification.md",
+    "procedures/harvest.md",
+    "templates/AGENTS.template.md",
+    "templates/approval-summary.template.md",
+    "templates/artifact-manifest.template.json",
+    "templates/decisions.template.md",
+    "templates/governance-inventory.template.md",
+    "templates/harvest-report.template.md",
+    "templates/repo-map.template.json",
+    "templates/shims/CLAUDE.template.md",
+    "templates/shims/GEMINI.template.md",
+    "templates/state.template.md",
+    "tests/fixtures.py",
+    "tests/golden/governance-manifest.json",
+    "tests/golden/greenfield-manifest.json",
+    "tests/regen_golden.py",
+    "tests/test_discover.py",
+    "tools/manifest-schema.md",
+    "harvest/processed.md"
+  ],
+  "guidance_paths": [
+    "AGENTS.md",
+    ".agents/state.md",
+    ".agents/decisions.md",
+    ".agents/repo-map.json",
+    ".agents/artifact-manifest.json"
+  ],
+  "notes": [
+    "This is the source repo for the bootstrap toolkit itself. Its AGENTS.md declares the active baseline files that define the process. The .agents/ layout was introduced by the 2026-06-10 self-migration.",
+    "Discovery on 2026-06-10 found route 'migration' because only root AGENTS.md existed as a governance marker; no prior .agents/ directory at root.",
+    "No suspected misplaced CI or branch mismatches were flagged."
+  ]
+}
