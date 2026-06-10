@@ -80,8 +80,11 @@ cannot get lazy on a large repo and you can.
 8. Optionally run the fresh-eyes test (`.bootstrap-tmp/procedures/verification.md`)
    - recommended whenever the drafts are substantial.
 9. Present the approval summary. Ask before copying any draft to a tracked path.
-10. After approval: copy drafts to their final paths. Working-tree edits only;
-    the owner decides when to commit.
+10. After approval: copy drafts to their final paths, then commit them as ONE
+    scoped commit - `git add` exactly the approved files (never `git add -A`),
+    using the commit message the approval summary announced. The owner's
+    approval covers this single commit. Never push; pushing stays with the
+    owner.
 11. Do not raise deleting `.bootstrap-tmp/` until approved files are copied.
     Delete it only if the human explicitly asks and the resolved path is exactly
     the repo's `.bootstrap-tmp` directory.

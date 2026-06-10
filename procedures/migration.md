@@ -96,6 +96,11 @@ file.
    git.
 4. Apart from the harvest dropbox, never write outside this repo. The
    canonical bootstrap repo is never modified from this session.
-5. Working-tree edits only in this repo; the owner decides when and what to
-   commit here.
+5. Commit the migration as ONE scoped commit: `git add` exactly the files
+   named in the approval summary - never `git add -A`, so unrelated
+   working-tree changes stay untouched - using the commit message the
+   approval summary announced. The owner's approval of the summary IS the
+   explicit authorization for this single commit, including in repos whose
+   rules gate git operations on the owner. Never push; pushing stays with
+   the owner.
 6. Do not raise deleting `.bootstrap-tmp/` until approved files are copied.

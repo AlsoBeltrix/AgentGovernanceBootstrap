@@ -76,6 +76,13 @@ every part of the process that contains judgment.
    only on an explicit decision. The owner never tolerates question-prompted
    execution. The same rule binds agents bootstrapping a repo and is recorded
    in this repo's own `AGENTS.md` working rules.
+10. **Approved guidance commits itself (owner decision, 2026-06-10).** Once
+    the owner approves the summary, the agent copies the files AND makes one
+    scoped commit — exact files only, message announced in the summary — with
+    no further ask. The approval is the explicit authorization, satisfying
+    owner-gated git rules in target repos. Pushing remains the owner's action.
+    Pilot evidence: requiring a separate "now commit" step left migrations
+    sitting uncommitted, unsynced across the owner's machines.
 
 ## New repo layout (this repo)
 
@@ -172,9 +179,11 @@ Executed by the in-repo agent when governance markers exist:
    plain-English contract.
 
 Nothing outside `.bootstrap-tmp/` is written before approval. After approval the
-agent copies drafts to tracked paths and applies banners — working-tree edits
-only; commits remain the owner's call, which also keeps the workflow compatible
-with target repos (like Blit) whose rules gate all git operations on the owner.
+agent copies drafts to tracked paths, applies banners, and makes ONE scoped
+commit whose message the approval summary announced — adding only the approved
+files, never `git add -A`. The owner's approval of the summary constitutes the
+explicit per-action authorization that repos with owner-gated git rules (like
+Blit) require for that commit. Pushing remains owner-triggered.
 
 ## Fresh-eyes verification (procedures/verification.md)
 

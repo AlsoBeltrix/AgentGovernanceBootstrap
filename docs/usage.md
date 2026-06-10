@@ -34,7 +34,9 @@ The agent: runs `tools/discover.py` against the repo, reads the generated
 `.bootstrap-tmp/` evidence, follows the computed route, drafts guidance under
 `.bootstrap-tmp/drafts/`, runs the fresh-eyes check when migrating, and
 presents a plain-English approval summary. Nothing outside `.bootstrap-tmp/`
-changes until you approve. You decide when to commit.
+changes until you approve. On approval the agent copies the files into place
+and makes one scoped commit whose message the summary announced; pushing
+stays yours.
 
 ## Fallback flow (sandboxed agent)
 
@@ -69,11 +71,13 @@ One file: `.bootstrap-tmp/drafts/approval-summary.md`. It starts with
 you never need to read code, diffs, or JSON to decide. For migrations it
 includes the governance inventory and the fresh-eyes verification result.
 
-## What to commit in target repos
+## What gets committed in target repos
 
-Approved durable guidance: `AGENTS.md`, `.agents/*`, harness shims, command
-wrappers, and supersession banners on old governance files. Never commit
-`.bootstrap-tmp/` (it self-ignores).
+The bootstrap commit happens automatically once you approve, and contains
+only the approved guidance: `AGENTS.md`, `.agents/*`, harness shims, command
+wrappers, and supersession banners on old governance files. Unrelated
+working-tree changes are never swept in, `.bootstrap-tmp/` never gets
+committed (it self-ignores), and pushing is yours.
 
 ## Harvest (optional, expected to be rare)
 

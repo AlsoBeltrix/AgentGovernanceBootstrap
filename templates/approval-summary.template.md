@@ -51,6 +51,11 @@ a human approval question.>
 `CLAUDE.md`), the governance inventory, supersession banners on superseded
 files, and the harvest report if one was drafted.>
 
+<State the exact commit message that will be used. Approving this summary
+authorizes copying the files above and making that ONE scoped commit (only
+these files, never `git add -A`). Nothing is pushed; pushing remains the
+owner's action.>
+
 ## Risks, Limitations, Or Open Questions
 
 <List unresolved questions, inferred facts, stale evidence, unread areas, or decisions
