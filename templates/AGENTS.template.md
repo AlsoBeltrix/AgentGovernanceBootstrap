@@ -134,6 +134,10 @@ Use the repo's current automated verification entry point recorded in
   after an `-s ours` or octopus merge records ancestry without content. Verify the
   content actually arrived (`git diff <branch> <main>`) before deleting anything or
   treating work as landed.
+- When working through a list of findings or fixes, address exactly one item per
+  commit and commit each before starting the next. Batch sweeps spanning many
+  findings happen only on the owner's explicit request. Whether work happens on a
+  branch is this repo's policy, not this rule's.
 
 ## Final Response
 
