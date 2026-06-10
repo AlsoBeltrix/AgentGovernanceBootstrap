@@ -9,8 +9,8 @@ short and update it when important repo facts change.
 - It supplies `tools/discover.py`, the procedures in `procedures/`, drafting templates in `templates/`, and supporting docs.
 - The toolkit supports three routes (greenfield, migration, update) and has been pilot-validated on external repos (roon-controller, vela, Blit) plus self.
 - Governance for this repo itself is in `AGENTS.md` (rules and pointers) plus this `.agents/` layout (state and decisions).
-- Working tree is currently clean on branch master at the commit recorded in the validated_against fields of the accompanying JSON manifests.
 - No `.agents/` directory existed at root prior to the 2026-06-10 layout migration; only root `AGENTS.md` was present as the governance marker.
+- 2026-06-10: the self-migration landed (commit d260a72, run by a Grok Build agent), and the four follow-up fixes it surfaced are folded back: self-target wording in migration Step 8.4, custody redefined as intended post-approval custody proven by git query, shim rule generalized to native AGENTS.md readers, and README's Current Status deduped into a pointer at this file.
 
 ## Next
 
