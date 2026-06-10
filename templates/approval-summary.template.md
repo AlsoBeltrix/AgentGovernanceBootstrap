@@ -46,20 +46,33 @@ a human approval question.>
 
 ## Files Proposed For Approval
 
+<Sort every proposed file into the two lists below using `git check-ignore`
+on its final path - never by assumption. A path the repo gitignores cannot
+enter the commit and must not be listed as committed.>
+
+### Committed (tracked)
+
 - `AGENTS.md`
 - `.agents/state.md`
 - `.agents/decisions.md`
 - `.agents/repo-map.json`
 - `.agents/artifact-manifest.json`
 
-<For migration runs, extend this list with the harness shim (for example
+### Local-only (gitignored, copied but never committed)
+
+<Files whose final paths an ignore rule covers - harness directories like
+`.claude/` often are. Write "None" when the list is empty. If keeping one of
+these tracked seems important, raise the ignore rule as a question instead;
+never plan a silent `git add -f`.>
+
+<For migration runs, extend these lists with the harness shim (for example
 `CLAUDE.md`), the governance inventory, supersession banners on superseded
 files, and the harvest report if one was drafted.>
 
 <State the exact commit message that will be used. Approving this summary
-authorizes copying the files above and making that ONE scoped commit (only
-these files, never `git add -A`). Nothing is pushed; pushing remains the
-owner's action.>
+authorizes copying the files above and making that ONE scoped commit
+(exactly the Committed list, never `git add -A`, never `git add -f`).
+Nothing is pushed; pushing remains the owner's action.>
 
 ## Risks, Limitations, Or Open Questions
 
@@ -82,8 +95,11 @@ English. For greenfield runs write "Not applicable - no existing governance.">
 
 ## Fresh-Eyes Verification
 
-<One plain-English sentence reporting the result of the fresh-eyes catchup test,
-for example: "A fresh agent given only the drafted files correctly answered all five
-questions in the verification procedure." If issues
-were found and fixed, say so. Required for migration runs; if skipped on a
-greenfield run, say "Not run (greenfield).">
+<One plain-English sentence reporting the result of the fresh-eyes catchup
+test, stating what it covers - discoverability and internal consistency, not
+external truth. For example: "A fresh agent given only the drafted files
+correctly answered all six questions in the verification procedure; this
+checks that the guidance is findable and consistent, not that external
+claims are true." Never present this test as proof that CI or deployment
+claims are correct. If issues were found and fixed, say so. Required for
+migration runs; if skipped on a greenfield run, say "Not run (greenfield).">

@@ -1,0 +1,55 @@
+# Discovery Manifest Schema
+
+Field-by-field reference for `repo-discovery-manifest.json`, written by
+`discover.py`. Read this instead of guessing key names. All file paths are
+repo-root-relative POSIX strings. Every marker list is a mechanical
+name-match: a lead to verify, never a fact to record in durable guidance.
+
+- `generatedAt` (string): ISO-8601 UTC timestamp of the discovery run.
+- `validated_against` (object): snapshot identity for drafts -
+  `commit` (string or null) and `date` (`YYYY-MM-DD`).
+- `repo` (object): `root` (absolute path of the scanned repo) and `scope`
+  (`"."`, or the subdirectory discovery was pointed at).
+- `git` (object):
+  - `isGitRepository` (bool).
+  - `branch` (string or null): current branch from `git rev-parse
+    --abbrev-ref HEAD`.
+  - `commit` (string or null): current `HEAD` sha.
+  - `status` (array of strings): raw `git status --short` lines. The packet's
+    "Dirty entries" count is this array's length.
+- `coverage` (object): `status` (`"complete"` or `"truncated"`),
+  `candidateCount` (files seen), `includedCount` (suggested reads kept),
+  `cap` (truncation threshold).
+- `route` (string): `"greenfield"`, `"migration"`, or `"update"`.
+- `bootstrapRepoPath` (string): bootstrap repo the pack was copied from.
+- `harvestRepoPath` (string or null): owner's machine-local harvest dropbox,
+  if configured.
+- `projectMarkers` (array of paths): build/project files by name-match.
+- `ciMarkers` (array of paths): CI files in provider-executable locations
+  only (`.github/workflows/`, root `.gitlab-ci.yml`, root
+  `azure-pipelines.yml`). Location alone still does not prove CI runs -
+  check branch triggers and provider settings before recording CI as a fact.
+- `suspectedMisplacedCi` (array of paths): CI-named files in locations no
+  provider executes (for example a root-level `ci.yml`). Treat as inactive
+  unless proven otherwise.
+- `ciBranchMismatches` (array of objects): heuristic scan of `branches:`
+  filters in the files above; each entry has `path`, `branches` (the trigger
+  list found), and `currentBranch`. A listed file likely never runs on the
+  current branch. Absence of an entry is not proof CI runs.
+- `agentMarkers` (array of paths): harness/agent control files by name-match.
+- `governanceMarkers` (array of paths): governance-system files by
+  name-match; these drive `route`.
+- `verificationCandidates` (array of objects): `command` and `source`
+  (where it was found). Mechanical and unconfirmed.
+- `likelySensitivePaths` (array of objects): `path`, `source`, `reason`.
+  Flagged by name only; never suggested for reading.
+- `suggestedReadPaths` (array of paths): what the drafting agent should read
+  directly from the repo.
+- `excludedSuggestedReadPaths` (array of objects): `path`, `reason` - marker
+  paths withheld from the read list (sensitive, ignored, or directories).
+- `trackedFiles`, `untrackedFiles`, `ignoredFiles` (arrays of paths): git
+  custody at scan time, from `git ls-files`, `git ls-files --others
+  --exclude-standard`, and `git status --ignored --short` respectively.
+  `ignoredFiles` may list a directory (for example `.claude/`) rather than
+  each file inside it. Use these (or live `git check-ignore`) to set
+  `custody` values - never path convention.

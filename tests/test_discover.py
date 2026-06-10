@@ -108,7 +108,7 @@ class TestScratchOutput(unittest.TestCase):
                     "templates/governance-inventory.template.md",
                     "templates/harvest-report.template.md",
                     "templates/shims/CLAUDE.template.md",
-                    "tools/discover.py"):
+                    "tools/discover.py", "tools/manifest-schema.md"):
             self.assertTrue((scratch / rel).is_file(), rel)
 
     def test_start_here_routes_migration(self):
@@ -163,6 +163,97 @@ class TestVerificationCandidates(unittest.TestCase):
     def test_sources_recorded(self):
         for c in self.green_manifest["verificationCandidates"]:
             self.assertTrue(c["source"])
+
+
+def _make_repo(path, files, branch="main"):
+    path = Path(path)
+    path.mkdir(parents=True)
+    fixtures._git(path, "init", "-q", "-b", branch)
+    for rel, content in files.items():
+        fixtures._write(path, rel, content)
+    fixtures._git(path, "add", "-A")
+    fixtures._git(path, "commit", "-q", "-m", "fixture")
+    return path
+
+
+class TestCiMarkerValidation(unittest.TestCase):
+    """F1 from the ExchangeAdminWeb pilot: a CI-named file outside any
+    provider-executable path must never be presented as a CI marker, and
+    branch-trigger mismatches must be surfaced."""
+
+    def test_root_ci_yml_is_suspected_not_ci_marker(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _make_repo(Path(tmp) / "repo", {
+                "README.md": "# x\n",
+                "ci.yml": "on:\n  push:\n    branches: [main]\njobs: {}\n",
+            }, branch="master")
+            manifest = fixtures.run_discover(repo)
+            self.assertEqual(manifest["ciMarkers"], [])
+            self.assertEqual(manifest["suspectedMisplacedCi"], ["ci.yml"])
+            self.assertEqual(manifest["ciBranchMismatches"], [
+                {"path": "ci.yml", "branches": ["main"],
+                 "currentBranch": "master"}])
+
+    def test_executable_workflow_is_ci_marker(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _make_repo(Path(tmp) / "repo", {
+                "README.md": "# x\n",
+                ".github/workflows/build.yml":
+                    "on:\n  push:\n    branches:\n      - main\n"
+                    "      - 'release/**'\njobs: {}\n",
+            })
+            manifest = fixtures.run_discover(repo)
+            self.assertEqual(manifest["ciMarkers"],
+                             [".github/workflows/build.yml"])
+            self.assertEqual(manifest["suspectedMisplacedCi"], [])
+            # branch "main" matches the dash-list trigger: no mismatch
+            self.assertEqual(manifest["ciBranchMismatches"], [])
+
+    def test_workflow_without_branch_filter_never_mismatches(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _make_repo(Path(tmp) / "repo", {
+                ".github/workflows/build.yml": "on: push\njobs: {}\n",
+            }, branch="master")
+            manifest = fixtures.run_discover(repo)
+            self.assertEqual(manifest["ciBranchMismatches"], [])
+
+    def test_branch_glob_trigger_matches(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _make_repo(Path(tmp) / "repo", {
+                ".github/workflows/r.yml":
+                    "on:\n  push:\n    branches: ['release/*']\njobs: {}\n",
+            }, branch="release/1.2")
+            manifest = fixtures.run_discover(repo)
+            self.assertEqual(manifest["ciBranchMismatches"], [])
+
+    def test_packet_flags_misplaced_ci(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _make_repo(Path(tmp) / "repo", {
+                "ci.yml": "on:\n  push:\n    branches: [main]\njobs: {}\n",
+            }, branch="master")
+            fixtures.run_discover(repo)
+            packet = (repo / ".bootstrap-tmp" / "bootstrap-review-packet.md"
+                      ).read_text(encoding="utf-8")
+            self.assertIn("not in a path any provider executes", packet)
+            self.assertIn("likely inactive", packet)
+
+
+class TestIgnoredMarkerAnnotation(unittest.TestCase):
+    """F2 from the ExchangeAdminWeb pilot: a gitignored harness dir must be
+    labeled local-only in the packet so it is never proposed as committable."""
+
+    def test_packet_marks_gitignored_claude_dir(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _make_repo(Path(tmp) / "repo", {
+                "README.md": "# x\n",
+                ".gitignore": ".claude/\n",
+            })
+            fixtures._write(repo, ".claude/commands/catchup.md", "ptr\n")
+            manifest = fixtures.run_discover(repo)
+            self.assertIn(".claude/", manifest["ignoredFiles"])
+            packet = (repo / ".bootstrap-tmp" / "bootstrap-review-packet.md"
+                      ).read_text(encoding="utf-8")
+            self.assertIn("(gitignored - local-only", packet)
 
 
 class TestGoldenManifests(unittest.TestCase):

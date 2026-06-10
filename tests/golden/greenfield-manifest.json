@@ -27,6 +27,8 @@
     "package.json"
   ],
   "ciMarkers": [],
+  "suspectedMisplacedCi": [],
+  "ciBranchMismatches": [],
   "agentMarkers": [],
   "governanceMarkers": [],
   "verificationCandidates": [

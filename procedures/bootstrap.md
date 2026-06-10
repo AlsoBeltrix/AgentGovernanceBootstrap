@@ -8,7 +8,17 @@ summaries, inventories, verification results, and questions must be understandab
 without reading code, diffs, or JSON. Raw files stay available, but no decision may
 require them. The same contract governs conversation: answer the human's questions
 with words and stop — never respond to a question or musing with edits or
-execution; act only on an explicit decision.
+execution; act only on an explicit decision. A handed-over artifact — defect
+report, findings list, plan, spec — is evidence to assess, not a decision to
+implement.
+
+The evidence rule applies to every route and every draft: any durable claim
+about repo state, CI, deployment, file custody, or another external system
+must cite the exact query or command that proved it is *currently active*,
+not merely present as a file. Mechanical name-matches — discovery markers,
+filename conventions, plausible-looking config — are leads to verify, never
+facts to record. If you cannot prove a claim, write it as a labeled
+assumption or leave it out.
 
 ## Step 0: Sync this toolkit
 
@@ -20,10 +30,19 @@ The canonical copies of this process live at:
   anywhere)
 
 Before anything else, sync the local bootstrap repo (the directory containing
-this `procedures/` folder; normally `~/dev/AgentGovernanceBootstrap`):
+this `procedures/` folder; normally `~/dev/AgentGovernanceBootstrap`).
 
-1. `git fetch` from each URL that responds.
-2. `git merge --ff-only` the newest fetched head.
+Run every command in this step as `git -C <bootstrap-repo> ...`. Do not rely
+on the shell's working directory: many harnesses reset cwd between tool
+calls, and a bare `git fetch` after a separate `cd` call silently hits the
+target repo instead.
+
+1. A remote "responds" when `git ls-remote --exit-code <url> HEAD` exits 0.
+   For each URL that responds, run `git -C <bootstrap-repo> fetch <url>`.
+   Fetch prints nothing when already up to date — that is success, not a
+   signal to investigate; confirm where things stand with
+   `git -C <bootstrap-repo> rev-parse HEAD FETCH_HEAD`.
+2. `git -C <bootstrap-repo> merge --ff-only` the newest fetched head.
 3. If no remote responds, fast-forward is impossible (local diverged), or the
    two remotes disagree with each other: proceed with the local copy as-is and
    flag that, in plain English, in the approval summary. Never merge or rebase
@@ -50,13 +69,22 @@ cannot get lazy on a large repo and you can.
 1. Find the script. Prefer `.bootstrap-tmp/tools/discover.py` if it exists, else
    `tools/discover.py` in the bootstrap repo (the directory containing the
    `procedures/` folder this file lives in).
-2. If `.bootstrap-tmp/repo-discovery-manifest.json` is missing, run:
-   `python3 <script> <target-repo-root>`
-3. If the manifest exists, compare its `git.commit` to current `HEAD`
+2. Pick a working interpreter with a functional probe, in order: `py -3
+   --version` (the canonical Windows launcher; prefer it there), then
+   `python3 --version`, then `python --version`. Treat a candidate as absent
+   when the command fails OR its output mentions "was not found" or
+   "Microsoft Store": Windows ships App Execution Alias stubs named
+   `python`/`python3` that sit on PATH but only open the Store, so a
+   `python3` on PATH does not imply a usable interpreter. Use the first
+   candidate that prints a real version. If every probe fails, Python is
+   missing — help the human install it first.
+3. If `.bootstrap-tmp/repo-discovery-manifest.json` is missing, run:
+   `<probed-python> <script> <target-repo-root>`
+4. If the manifest exists, compare its `git.commit` to current `HEAD`
    (`git rev-parse HEAD`). If they differ, re-run the script. Do not ask the human;
    this is self-healing. Only if you cannot run the script (sandboxed environment)
    stop and say, in plain English: "The discovery snapshot is older than the repo.
-   Please re-run discovery." If Python is missing, help the human install it first.
+   Please re-run discovery."
 
 ## Step 2: Read the evidence
 
@@ -95,11 +123,21 @@ cannot get lazy on a large repo and you can.
    completion; docs-only changes do not unless they affect setup, commands,
    runtime behavior, generated files, or user-visible behavior. Do not ask the
    human whether agents should test code.
+   Before recording any CI command or "CI gates merges" claim as durable
+   fact, confirm the workflow file sits in a path its provider actually
+   executes AND its branch triggers match the repo's current branch — the
+   packet's "Suspected Misplaced CI Files" and "CI Branch Trigger
+   Mismatches" sections flag known failures of both. If either check fails,
+   record verification as local-only and flag the dead CI file in the
+   approval summary.
 4. Draft under `.bootstrap-tmp/drafts/`, mirroring final paths:
    `AGENTS.md` (must include the Bootstrap Handoff section from the template),
    `.agents/state.md`, `.agents/decisions.md`, `.agents/repo-map.json`,
    `.agents/artifact-manifest.json`, playbooks only if the scope tier justifies
-   them.
+   them. Set every `custody` value in the artifact manifest from a git
+   query — tracked (`git ls-files --error-unmatch <path>` exits 0), ignored
+   (`git check-ignore <path>` exits 0), otherwise untracked — never from
+   path convention.
 5. Draft the harness shim (Codex-family tools read `AGENTS.md` natively and
    need none) for the harness you are running in, from
    `.bootstrap-tmp/templates/shims/` when one exists for it; otherwise write a
@@ -111,7 +149,10 @@ cannot get lazy on a large repo and you can.
    locally, or flag the change in plain English if sandboxed.
 7. Write `.bootstrap-tmp/drafts/approval-summary.md` from the template. It must
    start with `Approve`, `Approve after edits`, or `Do not approve yet`, give a
-   scope tier, and honor the plain-English contract.
+   scope tier, and honor the plain-English contract. Before listing a file as
+   committable, run `git check-ignore` on its final path: gitignored paths go
+   in the summary's Local-only list, or raise the ignore rule as a question —
+   never plan a silent `git add -f`.
 8. Optionally run the fresh-eyes test (`.bootstrap-tmp/procedures/verification.md`)
    - recommended whenever the drafts are substantial.
 9. Present the approval summary. Ask before copying any draft to a tracked path.

@@ -52,10 +52,18 @@ PROJECT_MARKER_PATTERNS = [
     "requirements.txt", "go.mod", "cargo.toml", "pom.xml",
     "build.gradle", "build.gradle.kts",
 ]
+# Only paths the CI provider actually loads count as CI markers. GitHub
+# Actions reads .github/workflows/ only; GitLab and Azure read their root
+# files. CI-named files anywhere else (e.g. a root-level ci.yml) are dead
+# unless proven otherwise and go to suspectedMisplacedCi instead.
 CI_MARKER_PATTERNS = [
     ".github/workflows/*.yml", ".github/workflows/*.yaml",
-    "azure-pipelines.yml", "azure-pipelines.yaml", "ci.yml", "ci.yaml",
+    "azure-pipelines.yml", "azure-pipelines.yaml",
     ".gitlab-ci.yml",
+]
+SUSPECTED_CI_PATTERNS = [
+    "ci.yml", "ci.yaml", "workflows/*.yml", "workflows/*.yaml",
+    ".github/ci.yml", ".github/ci.yaml",
 ]
 AGENT_MARKER_PATTERNS = [
     "agents.md", "claude.md", ".cursorrules", ".cursor/rules/*",
@@ -289,6 +297,45 @@ def find_verification_candidates(repo_root, all_paths):
     return unique[:20]
 
 
+def check_ci_branch_triggers(repo_root, ci_paths, branch):
+    """Line-based heuristic: collect branch names from `branches:` filters in
+    workflow-style YAML and flag files whose triggers cannot match the current
+    branch. Globs are honored; a file with no `branches:` filter triggers on
+    all branches and is never flagged."""
+    if not branch:
+        return []
+    mismatches = []
+    for rel in sorted(ci_paths):
+        text = _read_text(repo_root, rel)
+        if not text:
+            continue
+        names = set()
+        lines = text.splitlines()
+        for i, line in enumerate(lines):
+            m = re.match(r"^\s*branches\s*:\s*(.*)$", line)
+            if not m:
+                continue
+            rest = m.group(1).strip()
+            if rest.startswith("["):
+                names.update(part.strip().strip("'\"")
+                             for part in rest.strip("[]").split(",")
+                             if part.strip())
+                continue
+            indent = len(line) - len(line.lstrip())
+            for nxt in lines[i + 1:]:
+                if not nxt.strip():
+                    continue
+                item = re.match(r"^(\s*)-\s*(.+?)\s*$", nxt)
+                if item and len(item.group(1)) > indent:
+                    names.add(item.group(2).strip("'\""))
+                else:
+                    break
+        if names and not any(fnmatch.fnmatch(branch, pat) for pat in names):
+            mismatches.append({"path": rel, "branches": sorted(names),
+                               "currentBranch": branch})
+    return mismatches
+
+
 def build_suggested_reads(records, marker_paths):
     by_path = {}
     for r in records:
@@ -329,35 +376,56 @@ def write_review_packet(path, manifest):
     lines.append(f"Repo root: `{manifest['repo']['root']}`")
     lines.append(f"Discovery scope: `{manifest['repo']['scope']}`")
     lines.append("Manifest: `.bootstrap-tmp/repo-discovery-manifest.json`")
+    lines.append("Manifest schema: `.bootstrap-tmp/tools/manifest-schema.md`")
+    lines.append("")
+    lines.append("All markers below are mechanical name-matches: leads to verify,")
+    lines.append("never facts to record in durable guidance.")
     lines.append("")
     lines.append("## Routing")
     lines.append("")
-    lines.append(f"- Computed route: **{manifest['route']}**")
+    lines.append(f"- Computed route (`route`): **{manifest['route']}**")
     lines.append("")
     lines.append("## Repo Mechanics Observed")
     lines.append("")
-    lines.append(f"- Git repository: {manifest['git']['isGitRepository']}")
-    lines.append(f"- Branch: {manifest['git']['branch']}")
-    lines.append(f"- Commit: {manifest['git']['commit']}")
-    lines.append(f"- Dirty entries: {len(manifest['git']['status'])}")
+    lines.append(f"- Git repository (`git.isGitRepository`): {manifest['git']['isGitRepository']}")
+    lines.append(f"- Branch (`git.branch`): {manifest['git']['branch']}")
+    lines.append(f"- Commit (`git.commit`): {manifest['git']['commit']}")
+    lines.append(f"- Dirty entries (`git.status` length): {len(manifest['git']['status'])}")
     cov = manifest["coverage"]
-    lines.append(f"- Coverage: {cov['status']} ({cov['candidateCount']} candidates, cap {cov['cap']})")
+    lines.append(f"- Coverage (`coverage.status`): {cov['status']} ({cov['candidateCount']} candidates, cap {cov['cap']})")
 
-    def section(title, items, empty):
+    ignored_set = set(manifest["ignoredFiles"])
+
+    def mark_ignored(item):
+        if item in ignored_set or item.rstrip("/") + "/" in ignored_set:
+            return f"`{item}` (gitignored - local-only; cannot be committed as-is)"
+        return f"`{item}`"
+
+    def section(title, items, empty, fmt=lambda item: f"`{item}`"):
         lines.append("")
         lines.append(f"## {title}")
         lines.append("")
         if not items:
             lines.append(f"- {empty}")
         for item in items:
-            lines.append(f"- `{item}`")
+            lines.append(f"- {fmt(item)}")
 
     section("Project Markers", manifest["projectMarkers"], "None detected.")
-    section("CI / Build Markers", manifest["ciMarkers"], "None detected.")
+    section("CI / Build Markers (provider-executable paths only)",
+            manifest["ciMarkers"], "None detected.")
+    section("Suspected Misplaced CI Files", manifest["suspectedMisplacedCi"],
+            "None.",
+            fmt=lambda p: (f"`{p}` - CI-named but not in a path any provider "
+                           "executes; treat as inactive unless proven otherwise."))
+    section("CI Branch Trigger Mismatches", manifest["ciBranchMismatches"],
+            "None detected (heuristic; absence is not proof CI runs).",
+            fmt=lambda mm: (f"`{mm['path']}` - triggers on branches "
+                            f"{mm['branches']} but the current branch is "
+                            f"`{mm['currentBranch']}`; likely inactive."))
     section("Existing Agent / Harness Files", manifest["agentMarkers"],
-            "None detected in scanned paths.")
+            "None detected in scanned paths.", fmt=mark_ignored)
     section("Existing Governance", manifest["governanceMarkers"],
-            "None detected. Greenfield workflow applies.")
+            "None detected. Greenfield workflow applies.", fmt=mark_ignored)
     lines.append("")
     lines.append("## Verification Candidates (mechanical, unconfirmed)")
     lines.append("")
@@ -411,6 +479,10 @@ def write_scratch(repo_root, route):
     own_copy = tools_dst / "discover.py"
     if Path(__file__).resolve() != own_copy.resolve():
         shutil.copyfile(Path(__file__).resolve(), own_copy)
+    schema_src = Path(__file__).resolve().parent / "manifest-schema.md"
+    schema_dst = tools_dst / "manifest-schema.md"
+    if schema_src.is_file() and schema_src != schema_dst.resolve():
+        shutil.copyfile(schema_src, schema_dst)
     (tools_dst / "bootstrap-origin.json").write_text(
         json.dumps({"bootstrapRepoPath": str(BOOTSTRAP_REPO_ROOT)}) + "\n",
         encoding="utf-8")
@@ -467,6 +539,10 @@ def discover(repo_arg, coverage_cap=2000):
 
     project_markers = match_paths(all_paths, PROJECT_MARKER_PATTERNS)
     ci_markers = match_paths(all_paths, CI_MARKER_PATTERNS)
+    suspected_ci = [p for p in match_paths(all_paths, SUSPECTED_CI_PATTERNS)
+                    if p not in set(ci_markers)]
+    ci_branch_mismatches = check_ci_branch_triggers(
+        repo_root, ci_markers + suspected_ci, branch)
     agent_markers = match_paths(all_paths, AGENT_MARKER_PATTERNS)
     governance_markers = match_paths(all_paths, GOVERNANCE_MARKER_PATTERNS)
     route = compute_route(governance_markers)
@@ -490,6 +566,8 @@ def discover(repo_arg, coverage_cap=2000):
         "harvestRepoPath": read_harvest_repo_path(),
         "projectMarkers": project_markers,
         "ciMarkers": ci_markers,
+        "suspectedMisplacedCi": suspected_ci,
+        "ciBranchMismatches": ci_branch_mismatches,
         "agentMarkers": agent_markers,
         "governanceMarkers": governance_markers,
         "verificationCandidates": verification,

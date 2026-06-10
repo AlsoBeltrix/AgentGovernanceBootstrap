@@ -98,6 +98,9 @@ yourself first -
 python3 tools/discover.py <path-to-target-repo>
 ```
 
+(on Windows prefer `py -3` — a `python3` on PATH is often the Microsoft
+Store stub, not a real interpreter)
+
 - then start the agent in the target repo with:
 
 ```text

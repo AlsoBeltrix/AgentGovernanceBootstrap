@@ -27,6 +27,8 @@
     "Cargo.toml"
   ],
   "ciMarkers": [],
+  "suspectedMisplacedCi": [],
+  "ciBranchMismatches": [],
   "agentMarkers": [
     ".claude/commands/catchup.md",
     "AGENTS.md",

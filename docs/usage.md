@@ -53,6 +53,10 @@ Run discovery yourself:
 python3 tools/discover.py <path-to-target-repo>
 ```
 
+On Windows prefer `py -3 tools/discover.py ...`: a `python3` found on PATH is
+often the Microsoft Store stub, which prints "Python was not found" even
+though the real launcher works fine.
+
 Then start the agent in the target repo with:
 
 ```text
