@@ -48,21 +48,19 @@ plain approval summary and reviewable, tracked repo guidance.
 
 ## Current Status
 
-Implemented:
+The toolkit is feature-complete for its current scope: the discovery helper
+(`tools/discover.py`, governance detection, verification candidates,
+routing), the self-contained `.bootstrap-tmp/` handoff pack, markdown
+procedures for all routes plus fresh-eyes verification and harvest sweeps,
+drafting templates, and deterministic fixture tests with golden manifests.
+It is validated by pilot migrations on real repos across Claude, GPT,
+Gemini, and Grok harnesses — including a self-migration of this repo — with
+pilot findings folded back into the procedures.
 
-- Python discovery helper (`tools/discover.py`) with governance detection,
-  verification-candidate detection, and routing (greenfield / migration / update)
-- self-contained `.bootstrap-tmp/` handoff pack (procedures, templates, and
-  the script itself are copied in so sandboxed agents can run without reaching
-  back to this repo)
-- markdown procedures for bootstrap, migration, fresh-eyes verification, and
-  harvest sweep
-- drafting templates including governance inventory, harvest report, and
-  harness shims
-- deterministic fixture tests with golden manifests
-- validated by pilot migrations on three real repos across Claude, GPT, and
-  Gemini harnesses; pilot findings are folded back into the procedures
-- the original PowerShell helper is retired to `docs/history/`
+Live repo state (active work, blockers, next actions) is tracked in
+[`.agents/state.md`](.agents/state.md); settled decisions in
+[`.agents/decisions.md`](.agents/decisions.md). This file stays a stable
+description; those files are the current truth.
 
 ## Requirements
 
