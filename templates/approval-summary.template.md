@@ -1,5 +1,10 @@
 # Bootstrap Approval Summary
 
+<Altitude: everything above the Existing Governance Inventory must fit on one
+screen - short paragraphs, no exhaustive detail; the inventory is the only
+section that may run long. Always state the scope tier. For migration runs,
+include the inventory inline; never just point at another file.>
+
 ## Recommendation
 
 Start with exactly one of these:

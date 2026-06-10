@@ -52,6 +52,17 @@ Then start the agent in the target repo with:
 Read .bootstrap-tmp/START-HERE.md and follow it.
 ```
 
+Small or local models: prefer this fallback flow (START-HERE.md is shorter and
+self-contained) and run them with a plugin-free harness profile - heavy plugin
+stacks can distract a weak model from the kickoff instruction entirely.
+
+## Starting over or switching agents
+
+Delete the target repo's `.bootstrap-tmp/` before re-running the bootstrap
+with a different agent. Drafts deliberately survive discovery re-runs (so a
+mid-session refresh never loses work), which means a new agent would otherwise
+inherit the previous agent's drafts.
+
 ## Routes
 
 Discovery computes one of three routes, shown in `START-HERE.md`:
