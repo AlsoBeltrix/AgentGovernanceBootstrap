@@ -115,6 +115,9 @@ Use the repo's current automated verification entry point recorded in
 `.agents/repo-map.json` or `.agents/playbooks/*`.
 
 - For code changes, run the current automated verification before claiming completion.
+- When a change ships with a new test, prove the test guards it: temporarily revert the
+  change, confirm the test fails, restore it, confirm everything passes. A test that
+  passes with its fix reverted is vacuous and must be replaced.
 - For docs-only changes, code verification is not required unless the docs affect setup,
   commands, runtime behavior, generated files, or user-visible behavior.
 - For behavior that automation does not cover, run the relevant manual check, smoke test,
@@ -124,6 +127,13 @@ Use the repo's current automated verification entry point recorded in
   instead of asking the human whether code should be tested.
 - Ask the human only when evidence conflicts, no plausible command exists, or the command
   appears destructive, expensive, credentialed, or otherwise unsafe to run automatically.
+
+## Git Safety
+
+- Never conclude a branch is merged from ancestry alone: `git branch --merged` can lie
+  after an `-s ours` or octopus merge records ancestry without content. Verify the
+  content actually arrived (`git diff <branch> <main>`) before deleting anything or
+  treating work as landed.
 
 ## Final Response
 
