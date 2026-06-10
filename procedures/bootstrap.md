@@ -134,10 +134,15 @@ cannot get lazy on a large repo and you can.
    `AGENTS.md` (must include the Bootstrap Handoff section from the template),
    `.agents/state.md`, `.agents/decisions.md`, `.agents/repo-map.json`,
    `.agents/artifact-manifest.json`, playbooks only if the scope tier justifies
-   them. Set every `custody` value in the artifact manifest from a git
-   query — tracked (`git ls-files --error-unmatch <path>` exits 0), ignored
-   (`git check-ignore <path>` exits 0), otherwise untracked — never from
-   path convention.
+   them. Set every `custody` value in the artifact manifest to the custody
+   the file will have once the approval commit lands, proven by git query —
+   never from path convention. Files on the summary's Committed list are
+   `tracked` (existing files prove it via `git ls-files --error-unmatch
+   <path>` exiting 0; new files by `git check-ignore <path>` exiting
+   non-zero, which proves they are committable). Local-only files are
+   `ignored` (`git check-ignore` exits 0) or `untracked`. Recording
+   draft-time custody for a file the same commit will track bakes a
+   falsehood into the manifest.
 5. Draft the harness shim (Codex-family tools read `AGENTS.md` natively and
    need none) for the harness you are running in, from
    `.bootstrap-tmp/templates/shims/` when one exists for it; otherwise write a

@@ -61,9 +61,14 @@ Under `.bootstrap-tmp/drafts/`, mirroring final paths:
    Files" and "CI Branch Trigger Mismatches" sections flag known failures of
    both. If either check fails, record verification as local-only and flag
    the dead CI file in the approval summary. Set every `custody` value in
-   the artifact manifest from a git query — tracked (`git ls-files
-   --error-unmatch <path>` exits 0), ignored (`git check-ignore <path>`
-   exits 0), otherwise untracked — never from path convention.
+   the artifact manifest to the custody the file will have once the
+   approval commit lands, proven by git query — never from path convention.
+   Files on the summary's Committed list are `tracked` (existing files
+   prove it via `git ls-files --error-unmatch <path>` exiting 0; new files
+   by `git check-ignore <path>` exiting non-zero, which proves they are
+   committable). Local-only files are `ignored` (`git check-ignore` exits
+   0) or `untracked`. Recording draft-time custody for a file the same
+   commit will track bakes a falsehood into the manifest.
 5. Playbooks only where the scope tier justifies them.
 6. Only if this repo's governance contains rules earned from real, citable
    incidents that other repos would benefit from: draft

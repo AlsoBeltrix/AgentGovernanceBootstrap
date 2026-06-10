@@ -62,7 +62,7 @@ Any prior practice of treating filename conventions or static markers as suffici
 Status: Active
 
 Decision:
-Before listing any file as committable in an approval summary, run `git check-ignore` on its final path. Gitignored paths are proposed only as Local-only (copied into place but never `git add`ed, never `git add -f`). Custody values in artifact manifests are set exclusively from live git queries at draft time: "tracked" if `git ls-files --error-unmatch` exits 0, "ignored" if `git check-ignore` exits 0, otherwise "untracked". New files that are not ignored are listed under Committed and will be `git add`ed explicitly (never `-A`).
+Before listing any file as committable in an approval summary, run `git check-ignore` on its final path. Gitignored paths are proposed only as Local-only (copied into place but never `git add`ed, never `git add -f`). Custody values in artifact manifests record the custody each file will have once the approval commit lands, proven by git query: "tracked" for files on the Committed list (existing files via `git ls-files --error-unmatch` exiting 0; new files via `git check-ignore` exiting non-zero, proving them committable), "ignored" or "untracked" for Local-only files. Never set custody from path convention, and never record draft-time custody for a file the same commit will track. New files that are not ignored are listed under Committed and will be `git add`ed explicitly (never `-A`). (Refined 2026-06-10: the self-migration followed the earlier draft-time wording and recorded "untracked" for files its own commit made tracked.)
 
 Reason:
 Respects owner intent expressed in .gitignore. Silent `git add -f` is forbidden. The bootstrap commit is always exactly the scoped list from the approved summary.
