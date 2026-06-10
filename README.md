@@ -50,72 +50,61 @@ plain approval summary and reviewable, tracked repo guidance.
 
 Implemented:
 
-- manifest-only discovery
-- temporary `.bootstrap-tmp/` handoff directory
-- first-bootstrap handoff instructions
-- human-facing approval summary template
-- draft templates for `AGENTS.md`, `.agents/*.md`, and `.agents/*.json`
-- historical design and review record
+- Python discovery helper (`tools/discover.py`) with governance detection,
+  verification-candidate detection, and routing (greenfield / migration / update)
+- self-contained `.bootstrap-tmp/` handoff pack (procedures, templates, and
+  the script itself are copied in so sandboxed agents can run without reaching
+  back to this repo)
+- markdown procedures for bootstrap, migration, fresh-eyes verification, and
+  harvest sweep
+- drafting templates including governance inventory, harvest report, and
+  harness shims
+- deterministic fixture tests with golden manifests
+- legacy PowerShell helper frozen pending the Blit pilot
 
 Not implemented yet:
 
-- durable apply/update command
-- acceptance grader
-- generated harness adapters
-- clean-copy test automation
+- Blit pilot (acceptance test for the migration procedure)
+- PowerShell helper retirement (gated on the pilot)
 
 ## Requirements
 
-Full discovery requires:
-
 - Git
-- PowerShell
-- an agent harness that can read files in the target repo
+- Python 3 (standard library only - no pip, no packages). If missing on
+  Windows, the agent walks you through a one-time install.
+- an agent harness that can read files and run commands in the target repo
 
-The current helper is written in PowerShell. The generated target-repo guidance is
-Markdown and JSON; target repos do not inherit a PowerShell runtime requirement from that
-guidance.
+Target repos inherit no runtime dependency: generated guidance is Markdown
+and JSON.
 
 ## Quick Start
 
-Run discovery from this repo:
+Open a fresh agent session in the target repo and paste one line:
 
-```powershell
-.\tools\agent-bootstrap-discover.ps1 <path-to-target-repo>
+```text
+Read <path-to-this-repo>/procedures/bootstrap.md and follow it.
 ```
 
-Then open a fresh agent session in the target repo.
+The agent runs discovery itself, follows the computed route (greenfield,
+migration, or update), drafts under `.bootstrap-tmp/drafts/`, and presents a
+plain-English approval summary before any tracked file changes.
 
-Give the agent this prompt:
+Fallback for sandboxed agents that cannot reach this repo: run discovery
+yourself first -
+
+```bash
+python3 tools/discover.py <path-to-target-repo>
+```
+
+- then start the agent in the target repo with:
 
 ```text
 Read .bootstrap-tmp/START-HERE.md and follow it.
 ```
 
-`START-HERE.md` is always generated. In repos that already have `AGENTS.md`, it tells the
-agent to read that file and follow its bootstrap handoff rule before using the fallback
-workflow.
-
-The agent should write proposed guidance under `.bootstrap-tmp/drafts/` first, then ask
-before copying those drafts to durable tracked guidance paths.
-
-The primary review artifact is `.bootstrap-tmp/drafts/approval-summary.md`. It should
-summarize the proposed durable changes in plain English so the human can make an approval
-decision without reading every draft file. It should also state the recommended scope tier
-and identify any assumptions that need approval before becoming durable facts. The summary
-should start with `Approve`, `Approve after edits`, or `Do not approve yet`, and any
-limitations should be labeled Low, Medium, or High risk for approval.
-
-Approval summaries should not ask the human to approve normal engineering hygiene. If the
-repo has an observed automated verification command, the drafted guidance should require
-future agents to run it for code changes. Docs-only changes do not need code verification
-unless they affect setup, commands, runtime behavior, generated files, or user-visible
-behavior. Behavior that automation cannot cover should name the relevant manual check or
-state that it was not run.
-
-Bootstrap outputs should use durable, generalized wording. Do not put transient chat
-phrasing, session-specific detours, or prompt corrections into approval summaries, drafts,
-or durable guidance.
+Both doors converge on the same files and the same approval gates. Use the
+one-line prompt whenever the agent can read this repo (the normal case on your
+own machine); use the fallback only when it cannot.
 
 ## File Roles
 
@@ -140,4 +129,6 @@ durable guidance.
 - [Design](docs/design.md)
 - [History](docs/history/)
 
-The current accepted plan is [docs/history/bootstrap-plan.v9.md](docs/history/bootstrap-plan.v9.md).
+The current accepted design is
+[docs/superpowers/specs/2026-06-09-existing-governance-migration-design.md](superpowers/specs/2026-06-09-existing-governance-migration-design.md);
+`docs/history/` holds the prior plan generations.

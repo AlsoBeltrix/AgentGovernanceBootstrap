@@ -1,5 +1,13 @@
 # Design
 
+> **Architecture update (2026-06-09).** The current design is
+> [docs/superpowers/specs/2026-06-09-existing-governance-migration-design.md](superpowers/specs/2026-06-09-existing-governance-migration-design.md):
+> single-session kickoff, Python discovery (`tools/discover.py`), judgment in
+> `procedures/` and `templates/` markdown, migration support for repos with
+> existing governance, and a minimal owner-gated harvest. Sections below
+> describe the universal invariants and remain accurate; references to the
+> PowerShell helper and the two-stage-only flow are historical.
+
 This project separates temporary discovery from durable repo authority.
 
 ## Purpose

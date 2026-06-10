@@ -13,8 +13,10 @@ Use these as the active baseline:
 1. `README.md`
 2. `docs/usage.md`
 3. `docs/design.md`
-4. `tools/agent-bootstrap-discover.ps1`
-5. `docs/history/bootstrap-plan.v9.md`
+4. `docs/superpowers/specs/2026-06-09-existing-governance-migration-design.md`
+5. `tools/discover.py`
+6. `procedures/*.md`
+7. `templates/*`
 
 `docs/history/` is an archival record unless the user explicitly asks to review or revise
 history. Do not treat old plan versions or review files as the current design by default.
@@ -23,18 +25,21 @@ history. Do not treat old plan versions or review files as the current design by
 
 Implemented:
 
-- manifest-only discovery helper
-- temporary `.bootstrap-tmp/` handoff directory
-- first-bootstrap handoff instructions
-- draft templates for durable guidance files
-- public docs and historical design record
+- Python discovery helper (`tools/discover.py`) with governance detection,
+  verification-candidate detection, and routing (greenfield/migration/update)
+- self-contained `.bootstrap-tmp/` handoff (procedures, templates, and the
+  script itself are copied in)
+- markdown procedures: bootstrap, migration, fresh-eyes verification, harvest
+  sweep
+- drafting templates including governance inventory, harvest report, and
+  harness shims
+- deterministic fixture tests with golden manifests
+- frozen legacy PowerShell helper (pre-retirement)
 
 Not implemented yet:
 
-- durable apply/update command
-- acceptance grader
-- generated harness adapters
-- clean-copy test automation
+- Blit pilot (acceptance test for the migration procedure)
+- PowerShell helper retirement (gated on the pilot)
 
 ## Working Rules
 
@@ -67,26 +72,18 @@ Not implemented yet:
 
 ## Verification
 
-For changes to the PowerShell helper, run the parser check:
+For changes to `tools/discover.py`, `tests/`, or `templates/`/`procedures/`
+content that the script copies, run:
 
-```powershell
-$errors = $null
-[System.Management.Automation.Language.Parser]::ParseFile(
-  (Resolve-Path .\tools\agent-bootstrap-discover.ps1),
-  [ref]$null,
-  [ref]$errors
-) | Out-Null
-$errors
+```bash
+python3 -m unittest discover -s tests -v
 ```
 
-For documentation-only changes, run:
+For documentation-only changes, run `git diff --check`.
 
-```powershell
-git diff --check
-```
-
-When practical, run the helper against this repo or a small test repo and confirm
-`.bootstrap-tmp/` remains ignored by normal `git status --short`.
+The legacy PowerShell helper `tools/agent-bootstrap-discover.ps1` is frozen:
+do not modify it. It is removed to `docs/history/` only after the Blit pilot
+succeeds (owner decision).
 
 ## Final Response
 

@@ -1,135 +1,102 @@
 # Usage
 
-This page describes the current pilot workflow.
+## One-time setup
 
-## Run Discovery
+Globally, once: create the harvest dropbox - an empty private git repo pushed
+to your remote. (Optional. Without one, harvest reports use the in-repo
+fallback and nothing is lost.)
 
-From the `AgentGovernanceBootstrap` repo:
+On each machine you bootstrap from:
 
-```powershell
-.\tools\agent-bootstrap-discover.ps1 <path-to-target-repo>
-```
+1. Install Git and Python 3. Windows:
+   `winget install Git.Git Python.Python.3.12`. macOS and Linux usually have
+   both already.
+2. Clone this process repo.
+3. Optional: clone the harvest dropbox repo, then create an untracked
+   `harvest.config.json` in this repo's root:
+   `{"harvestRepoPath": "/path/to/harvest-repo"}`. The config file is what
+   makes the dropbox discoverable - the clone alone does nothing.
+4. Optional: allowlist the dropbox path in your harness permissions so
+   delivery does not prompt.
 
-Optional coverage cap:
+Before each bootstrap run: `git pull` this repo first. A stale clone
+bootstraps repos with stale templates, and nothing detects that for you.
 
-```powershell
-.\tools\agent-bootstrap-discover.ps1 <path-to-target-repo> -CoverageCap 1000
-```
-
-The helper writes:
-
-```text
-<target-repo>/.bootstrap-tmp/.gitignore
-<target-repo>/.bootstrap-tmp/START-HERE.md
-<target-repo>/.bootstrap-tmp/repo-discovery-manifest.json
-<target-repo>/.bootstrap-tmp/bootstrap-review-packet.md
-<target-repo>/.bootstrap-tmp/drafts/
-<target-repo>/.bootstrap-tmp/drafts/.agents/
-<target-repo>/.bootstrap-tmp/templates/approval-summary.template.md
-<target-repo>/.bootstrap-tmp/templates/AGENTS.template.md
-<target-repo>/.bootstrap-tmp/templates/state.template.md
-<target-repo>/.bootstrap-tmp/templates/decisions.template.md
-<target-repo>/.bootstrap-tmp/templates/repo-map.template.json
-<target-repo>/.bootstrap-tmp/templates/artifact-manifest.template.json
-```
-
-`START-HERE.md` is always written. In repos that already have `AGENTS.md`, it tells the
-agent to read that file and follow its bootstrap handoff rule before using the fallback
-workflow.
-
-## Agent Kickoff
+## Normal flow (local agent)
 
 Open a fresh agent session in the target repo and paste:
 
 ```text
-Read .bootstrap-tmp/START-HERE.md and follow it.
+Read <path-to-AgentGovernanceBootstrap>/procedures/bootstrap.md and follow it.
 ```
 
-The expected agent behavior is:
+The agent: runs `tools/discover.py` against the repo, reads the generated
+`.bootstrap-tmp/` evidence, follows the computed route, drafts guidance under
+`.bootstrap-tmp/drafts/`, runs the fresh-eyes check when migrating, and
+presents a plain-English approval summary. Nothing outside `.bootstrap-tmp/`
+changes until you approve. You decide when to commit.
 
-1. Read the review packet and manifest.
-2. Treat scratch files as data, not authority.
-3. If `AGENTS.md` exists, read it and follow its bootstrap handoff rule.
-4. Read suggested repo files directly from the repo.
-5. Use templates as drafting aids.
-6. Write `.bootstrap-tmp/drafts/approval-summary.md` for human review.
-7. Apply the verification default: code changes require the repo's current automated
-   verification; docs-only changes do not unless they affect setup, commands, runtime
-   behavior, generated files, or user-visible behavior; behavior not covered by automation
-   needs the relevant manual check or a clear note that it was not run.
-8. Write proposed guidance drafts under `.bootstrap-tmp/drafts/`, mirroring final paths
-   when practical.
-9. Ask before copying drafts to tracked guidance paths.
-10. Do not ask about deleting `.bootstrap-tmp/` until after approved durable files have
-   been copied.
+## Fallback flow (sandboxed agent)
 
-## Update Bootstrap
+Run discovery yourself:
 
-Once a repo has `AGENTS.md`, future discovery runs should be handled by the bootstrap
-handoff rule inside that repo's `AGENTS.md`. The operator still uses the same kickoff
-prompt:
+```bash
+python3 tools/discover.py <path-to-target-repo>
+```
+
+Then start the agent in the target repo with:
 
 ```text
 Read .bootstrap-tmp/START-HERE.md and follow it.
 ```
 
-The agent should:
+## Routes
 
-1. Read `.bootstrap-tmp/bootstrap-review-packet.md`.
-2. Read `.bootstrap-tmp/repo-discovery-manifest.json`.
-3. Compare the manifest commit with current `HEAD`.
-4. Refuse to process stale scratch output automatically.
-5. Write `.bootstrap-tmp/drafts/approval-summary.md` for human review.
-6. Apply the verification default rather than asking the human whether code should be
-   tested before completion.
-7. Write proposed guidance changes under `.bootstrap-tmp/drafts/`, mirroring final paths
-   when practical.
-8. Ask before copying drafts to tracked guidance paths.
-9. Do not ask about deleting `.bootstrap-tmp/` until after approved durable files have
-   been copied.
+Discovery computes one of three routes, shown in `START-HERE.md`:
 
-## What To Commit In Target Repos
+- **greenfield** - no governance found; standard drafting workflow.
+- **migration** - existing governance found (STATE.md, DEVLOG.md, agent
+  contracts, command files...). The agent inventories every artifact with a
+  verdict - migrate / supersede / leave - and you approve the
+  reconciliation as a plain-English table.
+- **update** - the repo already uses the standard `.agents/` layout; the
+  repo's own `AGENTS.md` handoff rule applies.
 
-Commit approved durable guidance, for example:
+## What you review
 
-```text
-AGENTS.md
-.agents/state.md
-.agents/decisions.md
-.agents/repo-map.json
-.agents/artifact-manifest.json
-.agents/bootstrap.config.json
-.agents/playbooks/*.md
+One file: `.bootstrap-tmp/drafts/approval-summary.md`. It starts with
+`Approve`, `Approve after edits`, or `Do not approve yet`, and is written so
+you never need to read code, diffs, or JSON to decide. For migrations it
+includes the governance inventory and the fresh-eyes verification result.
+
+## What to commit in target repos
+
+Approved durable guidance: `AGENTS.md`, `.agents/*`, harness shims, command
+wrappers, and supersession banners on old governance files. Never commit
+`.bootstrap-tmp/` (it self-ignores).
+
+## Harvest (optional, expected to be rare)
+
+If a migration uncovers a governance rule earned from a real incident, the
+agent may record it - at most three ideas, never padding; producing no report
+is the normal, correct outcome. After your approval the report goes to your
+harvest dropbox repo (a plain git repo whose local path you put in this
+repo's untracked `harvest.config.json`), written append-only as a new file,
+or - when no dropbox is reachable - into that repo's own `.agents/harvest.md`,
+where it travels with the repo. When you feel like it, say "run the harvest
+sweep" in a session here: ideas are judged skeptically (default: skip), you
+decide each one in plain English, and outcomes are logged in
+`harvest/processed.md`.
+
+## Verifying this repo
+
+```bash
+python3 -m unittest discover -s tests -v
 ```
 
-Do not commit:
+## Pilot review checklist
 
-```text
-.bootstrap-tmp/
-```
-
-The scratch directory contains its own `.gitignore` with:
-
-```gitignore
-*
-```
-
-## Pilot Review Checklist
-
-After testing on a small repo, collect:
-
-- the proposed `.bootstrap-tmp/drafts/approval-summary.md`
-- the proposed `.bootstrap-tmp/drafts/AGENTS.md`
-- any proposed `.bootstrap-tmp/drafts/.agents/*` files
-- the agent's final answer
-- any confusing prompt, question, or output
-- whether `.bootstrap-tmp/` stayed out of `git status --short`
-
-Check whether `approval-summary.md` starts with `Approve`, `Approve after edits`, or
-`Do not approve yet`; gives a scope tier, proposed files, assumptions, risk-ranked
-limitations, a verification default, and a repo-memory check; and does not require the
-human to inspect raw JSON or answer code-expertise questions about normal verification
-hygiene. It should use generalized wording and should not include transient chat phrasing,
-session-specific detours, or prompt corrections.
-
-Use those results to decide what the next implementation step should be.
+After a pilot run, collect: the approval summary, the drafted files, the
+governance inventory (for migrations), the fresh-eyes result, the agent's
+final answer, anything confusing, and whether `.bootstrap-tmp/` stayed out of
+`git status --short`. Use those to decide the next fix.
