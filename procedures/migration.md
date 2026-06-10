@@ -85,8 +85,9 @@ only after approval.
 
 ## Step 4: Harness shims and commands
 
-1. Codex-family tools read `AGENTS.md` natively and need no shim. For other
-   harnesses, draft the shim for the harness you are running in from
+1. Harnesses that read `AGENTS.md` natively — Codex-family and many newer
+   tools — need no shim; judge from self-knowledge of the harness you are
+   running in. For harnesses that do not, draft the shim from
    `.bootstrap-tmp/templates/shims/`; for harnesses without a template, write a
    minimal pointer shim from self-knowledge and label it best-effort.
 2. Draft thin command wrappers for the repo's trigger vocabulary (catchup,

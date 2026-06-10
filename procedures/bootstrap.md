@@ -143,8 +143,9 @@ cannot get lazy on a large repo and you can.
    `ignored` (`git check-ignore` exits 0) or `untracked`. Recording
    draft-time custody for a file the same commit will track bakes a
    falsehood into the manifest.
-5. Draft the harness shim (Codex-family tools read `AGENTS.md` natively and
-   need none) for the harness you are running in, from
+5. Draft the harness shim (harnesses that read `AGENTS.md` natively —
+   Codex-family and many newer tools — need none; judge from self-knowledge
+   of the harness you are running in) for the harness you are running in, from
    `.bootstrap-tmp/templates/shims/` when one exists for it; otherwise write a
    minimal pointer shim from self-knowledge and label it "best-effort" in the
    approval summary.
