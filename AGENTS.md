@@ -38,6 +38,11 @@ Not implemented yet:
 
 ## Working Rules
 
+- Answer questions with words, never with code. When the owner asks a question
+  or thinks out loud, reply in plain English and stop. Do not edit files, write
+  code, or start multi-step changes until the owner explicitly decides.
+  Tool-local agent memory (Claude auto-memory, Serena memories, etc.) is
+  scratch; this file is the authority for this rule.
 - Prefer implementation and pilot-driven fixes over more planning.
 - Do not create a new plan revision unless the user asks for one.
 - Treat the repo as durable memory. If a repo-specific fact, decision, invariant,
