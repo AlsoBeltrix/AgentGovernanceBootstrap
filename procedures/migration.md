@@ -47,7 +47,11 @@ Under `.bootstrap-tmp/drafts/`, mirroring final paths:
 1. `AGENTS.md` from the template, carrying over the repo's battle-earned rules
    (for example git-safety restrictions, checkpoint discipline) in generalized
    wording. It must include the Bootstrap Handoff section so future runs route as
-   `update`.
+   `update`. Verify every factual claim inside migrated content - module names,
+   paths, commands, file references - against current repo evidence before
+   writing it: migrate the rule, not its stale examples, and flag anything you
+   could not verify. A fresh authoritative file that launders stale facts is
+   worse than the old file it replaced.
 2. `.agents/state.md` - current truth only: what is true now, active work,
    blockers, next action, verification commands. Do not import historical
    narrative.

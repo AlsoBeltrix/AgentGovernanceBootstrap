@@ -108,7 +108,9 @@ Treat these owner words as process requests:
 - `handoff`: update `.agents/state.md` so the next session can resume without chat
   context.
 - `drift`: compare a doc, decision, or guidance claim against repo evidence; fix the
-  lower-authority source or report the unresolved conflict.
+  lower-authority source or report the unresolved conflict. Guidance files
+  themselves - `AGENTS.md` and `.agents/*` - are in scope as drift targets, not
+  just sources of truth.
 - `decision`: record a settled durable decision in `.agents/decisions.md` and update
   affected guidance.
 - `plan`: draft or update a durable plan before broad implementation work.
